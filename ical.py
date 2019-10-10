@@ -9,6 +9,10 @@ if len(sys.argv) == 2 and os.path.isfile(sys.argv[0]):
     filter = f.readlines()
     f.close()
 
+for i in range(len(filter)):
+    filter[i] = filter[i].strip()
+
+
 byte_contents = urllib.request.urlopen("https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html").read()
 contents = byte_contents.decode('utf-8')
 
@@ -47,7 +51,9 @@ while(cursor > 0):
         name = week[daycursor:week.find('</font>', daycursor+1)]
         daycursor = week.find('<tr><td>', daycursor + 1)
 
-        if len(filter) != 0 and name not in filter:
+        print(name)
+        print(filter)
+        if len(filter) != 0 and name.strip() not in filter:
             continue
 
         out.write('BEGIN:VEVENT\n')
