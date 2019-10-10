@@ -33,13 +33,17 @@ while(cursor > 0):
         startdt = datetime.datetime.combine(date=date, time=starttime, tzinfo=pytz.timezone('Europe/Brussels'))
         enddt = datetime.datetime.combine(date=date, time=endtime, tzinfo=pytz.timezone('Europe/Brussels'))
 
-        daycursor = week.find('<tr><td>', daycursor+1)
         out.write('DTSTART:' + str(startdt.strftime('%Y%m%dT%H%M%S')) + '\n')
         out.write('DTEND:' + str(enddt.strftime('%Y%m%dT%H%M%S')) + '\n')
 
-        out.write('LOCATION:200A 00.225\n')
-        out.write('SUMMARY:Some class\n')
+        daycursor = week.find('<td>in</td>',daycursor+1)
+        out.write(('LOCATION:'+ week[daycursor+20:week.find('</td>', daycursor+20)] + '\n').replace(' '*5,' '))
+
+        daycursor = week.find('>', week.find('<font', daycursor)) + 1
+        out.write('SUMMARY:' + week[daycursor:week.find('</font>', daycursor+1)] + '\n')
         out.write('END:VEVENT\n')
+
+        daycursor = week.find('<tr><td>', daycursor + 1)
 
     cursor = contents.find('<hr>', cursor + 1)
 
