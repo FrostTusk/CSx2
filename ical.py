@@ -1,5 +1,13 @@
 import urllib.request
-import datetime, pytz
+import datetime, pytz, sys
+import os.path
+
+# python3 ical.py <textfile, EXACT names of courses>
+filter = []
+if len(sys.argv) == 2 and os.path.isfile(sys.argv[0]):
+    f = open(sys.argv[1], 'r')
+    filter = f.readlines()
+    f.close()
 
 byte_contents = urllib.request.urlopen("https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html").read()
 contents = byte_contents.decode('utf-8')
@@ -25,7 +33,6 @@ while(cursor > 0):
     #while for classes
     daycursor = week.find('<tr><td>')
     while(daycursor > 0):
-        out.write('BEGIN:VEVENT\n')
         time = week[daycursor+8:week.find('</td>',daycursor)]
         starttime = datetime.datetime.strptime(time.split('&#8212;')[0], '%H:%M').time()
         endtime = datetime.datetime.strptime(time.split('&#8212;')[1], '%H:%M').time()
@@ -33,17 +40,24 @@ while(cursor > 0):
         startdt = datetime.datetime.combine(date=date, time=starttime, tzinfo=pytz.timezone('Europe/Brussels'))
         enddt = datetime.datetime.combine(date=date, time=endtime, tzinfo=pytz.timezone('Europe/Brussels'))
 
-        out.write('DTSTART:' + str(startdt.strftime('%Y%m%dT%H%M%S')) + '\n')
-        out.write('DTEND:' + str(enddt.strftime('%Y%m%dT%H%M%S')) + '\n')
-
         daycursor = week.find('<td>in</td>',daycursor+1)
-        out.write(('LOCATION:'+ week[daycursor+20:week.find('</td>', daycursor+20)] + '\n').replace(' '*5,' '))
+        location = week[daycursor+20:week.find('</td>', daycursor+20)].replace(' '*5,' ')
 
         daycursor = week.find('>', week.find('<font', daycursor)) + 1
-        out.write('SUMMARY:' + week[daycursor:week.find('</font>', daycursor+1)] + '\n')
+        name = week[daycursor:week.find('</font>', daycursor+1)]
+        daycursor = week.find('<tr><td>', daycursor + 1)
+
+        if len(filter) != 0 and name not in filter:
+            continue
+
+        out.write('BEGIN:VEVENT\n')
+        out.write('DTSTART:' + str(startdt.strftime('%Y%m%dT%H%M%S')) + '\n')
+        out.write('DTEND:' + str(enddt.strftime('%Y%m%dT%H%M%S')) + '\n')
+        out.write('LOCATION:' + location + '\n')
+        out.write('SUMMARY:' + name + '\n')
         out.write('END:VEVENT\n')
 
-        daycursor = week.find('<tr><td>', daycursor + 1)
+
 
     cursor = contents.find('<hr>', cursor + 1)
 
@@ -51,6 +65,3 @@ while(cursor > 0):
 
 out.write('END:VCALENDAR\n')
 out.close()
-
-print(datetime.datetime.utcnow().astimezone(pytz.timezone('Europe/Brussels')))
-print((datetime.datetime.utcnow() + datetime.timedelta(days=30)).astimezone(pytz.timezone('Europe/Brussels')))
