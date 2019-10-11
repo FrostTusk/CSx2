@@ -39,8 +39,11 @@ class Event:
         starttime = datetime.datetime.strptime(time.split('&#8212;')[0], '%H:%M').time()
         endtime = datetime.datetime.strptime(time.split('&#8212;')[1], '%H:%M').time()
 
-        self.startdt = datetime.datetime.combine(date=date, time=starttime, tzinfo=pytz.timezone('Europe/Brussels'))
-        self.enddt = datetime.datetime.combine(date=date, time=endtime, tzinfo=pytz.timezone('Europe/Brussels'))
+        self.startdt = datetime.datetime.combine(date=date, time=starttime, tzinfo=pytz.timezone('Etc/GMT+2'))
+        self.enddt = datetime.datetime.combine(date=date, time=endtime, tzinfo=pytz.timezone('Etc/GMT+2'))
+
+        self.startdt = self.startdt.astimezone(pytz.timezone("utc"))
+        self.enddt = self.enddt.astimezone(pytz.timezone("utc"))
 
         daycursor = week.find('<td>in</td>',daycursor+1)
         self.location = week[daycursor+20:week.find('</td>', daycursor+20)].replace(' '*5,' ')
