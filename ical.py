@@ -80,23 +80,40 @@ def get_date(week):
     return datetime.date(year=int(date[2]), month=int(date[1]), day=int(date[0]))
 
 
-def write_day_events_to_out(day_contents, course_filter, out):
+def write_day_events_to_out(day_contents, course_filter, to_utc, out):
     date = get_date(day_contents)
 
     day_cursor = day_contents.find('<tr><td>')
     while(day_cursor > 0):
-        event = Event(True, out)
+        event = Event(to_utc, out)
         day_cursor = event.parse_in_event(day_contents, day_cursor, date)
 
         if len(course_filter) == 0 or event.name.strip() in course_filter:
             event.write_event_to_out()
 
+import argparse
+# Instantiate the parser
+parser = argparse.ArgumentParser(description='CSx2 == Computer Science Calendar System')
+# Required positional argument
+parser.add_argument('-itf', type=str,
+                    help='input textfile with EXACT names of courses')
 
-# python3 ical.py <textfile, EXACT names of courses>
-def main():
+# Optional positional argument
+parser.add_argument('-otf', type=str, required=True,
+                    help='An optional integer positional argument')
+
+# Optional positional argument
+parser.add_argument('-utc', type=str,
+                    help='An optional integer positional argument')
+
+args = parser.parse_args()
+
+def main(args):
+    print(args)
+    print(args.itf)
     course_filter = []
-    if len(sys.argv) >= 2 and os.path.isfile(sys.argv[1]):
-        course_filter = get_course_filter(sys.argv[1])
+    if args.itf and os.path.isfile(args.itf):
+        course_filter = get_course_filter(args.itf)
 
     contents = urllib.request.urlopen(TARGET_URL).read().decode('utf-8')
     cursor = contents.find('<hr>') # Skip to first week
@@ -110,11 +127,11 @@ def main():
             next_day_cursor = contents.find('<hr color="black" size="4">', cursor+1)
 
         day_contents = contents[cursor:next_day_cursor]
-        write_day_events_to_out(day_contents, course_filter, out)
+        write_day_events_to_out(day_contents, course_filter, True, out)
 
         cursor = contents.find('<hr>', cursor + 1)
 
     out.write('END:VCALENDAR\n')
     out.close()
 
-main()
+main(args)
