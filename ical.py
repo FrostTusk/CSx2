@@ -39,8 +39,12 @@ class Event:
         starttime = datetime.datetime.strptime(time.split('&#8212;')[0], '%H:%M').time()
         endtime = datetime.datetime.strptime(time.split('&#8212;')[1], '%H:%M').time()
 
-        self.startdt = datetime.datetime.combine(date=date, time=starttime, tzinfo=pytz.timezone('Etc/GMT+2'))
-        self.enddt = datetime.datetime.combine(date=date, time=endtime, tzinfo=pytz.timezone('Etc/GMT+2'))
+        self.startdt = datetime.datetime.combine(date=date, time=starttime)
+        self.enddt = datetime.datetime.combine(date=date, time=endtime)
+
+        local_tz = pytz.timezone('Europe/Brussels')
+        self.startdt = local_tz.localize(self.startdt)
+        self.enddt = local_tz.localize(self.enddt)
 
         self.startdt = self.startdt.astimezone(pytz.timezone("utc"))
         self.enddt = self.enddt.astimezone(pytz.timezone("utc"))
@@ -76,7 +80,7 @@ while(cursor > 0):
     while(daycursor > 0):
         event = Event()
         daycursor = event.parse_in_event(week, daycursor)
-        if len(filter) == 0 or name.strip() in filter:
+        if len(filter) == 0 or event.name.strip() in filter:
             event.write_to_file(out)
 
     cursor = contents.find('<hr>', cursor + 1)
