@@ -1,10 +1,10 @@
 import urllib.request
-import datetime, pytz, sys
+import datetime, pytz, sys, argparse
 import os.path
 
 # --- Constants
-TARGET_URL = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html'
-OUT_FILENAME = 'events.ical'
+SEM_1_URL = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_1.html'
+SEM_2_URL = 'https://people.cs.kuleuven.be/~btw/roosters1920/cws_semester_2.html'
 LOCAL_TIMEZONE = pytz.timezone('Europe/Brussels')
 # ---
 
@@ -91,34 +91,37 @@ def write_day_events_to_out(day_contents, course_filter, to_utc, out):
         if len(course_filter) == 0 or event.name.strip() in course_filter:
             event.write_event_to_out()
 
-import argparse
-# Instantiate the parser
-parser = argparse.ArgumentParser(description='CSx2 == Computer Science Calendar System')
-# Required positional argument
-parser.add_argument('-itf', type=str,
-                    help='input textfile with EXACT names of courses')
 
-# Optional positional argument
-parser.add_argument('-otf', type=str, required=True,
-                    help='An optional integer positional argument')
+def initialize_args():
+    parser = argparse.ArgumentParser(description='CSx2 == Computer Science Calendar System')
+   
+    parser.add_argument('-itf', type=str,
+                    help='Name of input textfile with EXACT names of courses')
 
-# Optional positional argument
-parser.add_argument('-utc', type=str,
-                    help='An optional integer positional argument')
+    parser.add_argument('-otf', type=str, required=True,
+                    help='Name of ical outputfile')
 
-args = parser.parse_args()
+    parser.add_argument('-utc', action='store_true',
+                    help='Flag to signal if timezone should be converted to utc?')
 
-def main(args):
+    parser.add_argument('-sem', choices=('1', '2'), required=True,
+                    help='What semester should be used (1 or 2)?')
+
+    return parser.parse_args()
+
+
+def main():
+    args = initialize_args()
     print(args)
-    print(args.itf)
     course_filter = []
     if args.itf and os.path.isfile(args.itf):
         course_filter = get_course_filter(args.itf)
 
-    contents = urllib.request.urlopen(TARGET_URL).read().decode('utf-8')
+    target_url = SEM_1_URL if args.sem == '1' else SEM_2_URL
+    contents = urllib.request.urlopen(target_url).read().decode('utf-8')
     cursor = contents.find('<hr>') # Skip to first week
 
-    out = open(OUT_FILENAME, 'w+')
+    out = open(args.otf, 'w+')
     out.write('BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//MCWS Classes//EN\n')
 
     while(cursor > 0):
@@ -127,11 +130,12 @@ def main(args):
             next_day_cursor = contents.find('<hr color="black" size="4">', cursor+1)
 
         day_contents = contents[cursor:next_day_cursor]
-        write_day_events_to_out(day_contents, course_filter, True, out)
+        write_day_events_to_out(day_contents, course_filter, args.utc, out)
 
         cursor = contents.find('<hr>', cursor + 1)
 
     out.write('END:VCALENDAR\n')
     out.close()
 
-main(args)
+
+main()
