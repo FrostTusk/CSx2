@@ -64,10 +64,11 @@ app.get('/something', (req, res) => {
       result += eventListToString(ical_memory[param][i])
     }
   }
-  res.setHeader('content-type', 'text/calendar');
-  res.set("Content-Disposition", "attachment;filename=events.ical");
-
-  res.send(result);
+  // res.setHeader('content-type', 'text/calendar');
+  // res.set("Content-Disposition", "attachment;filename=events.ical");
+  fs.writeFileSync("synchronous.ical", result);
+  res.sendFile('./synchronous.ical', { root: __dirname });
+//  res.send(result);
 })
 //
 // app.use(function(req, res, next) {
