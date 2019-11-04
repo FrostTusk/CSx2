@@ -112,7 +112,7 @@ def initialize_args():
 
 def main():
     args = initialize_args()
-    print(args)
+    
     course_filter = []
     if args.itf and os.path.isfile(args.itf):
         course_filter = get_course_filter(args.itf)
