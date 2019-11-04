@@ -64,6 +64,8 @@ app.get('/something', (req, res) => {
       result += eventListToString(ical_memory[param][i])
     }
   }
+
+  result += "END:VCALENDAR\r\n\r\n";
   // res.setHeader('content-type', 'text/calendar');
   // res.set("Content-Disposition", "attachment;filename=events.ical");
   fs.writeFileSync("synchronous.ical", result);
