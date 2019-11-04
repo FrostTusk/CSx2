@@ -71,6 +71,29 @@ app.get('/something', (req, res) => {
   //fs.writeFileSync("synchronous.ical", result);
   //res.sendFile('./synchronous.ical', { root: __dirname });
   res.send(result);
+});
+
+app.get('/outlook', (req, res) => {
+  var stats = fs.statSync("events.ical");
+  var mtime = stats.mtime;
+  if (mtime > ical_memory_time) {
+    console.log("reading ical in again");
+    read_in_ical();
+  }
+
+  let result = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-\/\/MCWS Classes\/\/EN\r\n';
+  for (param in req.query) {
+    for (i in ical_memory[param]) {
+      result += eventListToString(ical_memory[param][i])
+    }
+  }
+
+  result += "END:VCALENDAR\r\n\r\n";
+  res.setHeader('content-type', 'text/calendar');
+  res.set("Content-Disposition", "attachment;filename=events.ics");
+  //fs.writeFileSync("synchronous.ical", result);
+  //res.sendFile('./synchronous.ical', { root: __dirname });
+  res.send(result);
 })
 //
 // app.use(function(req, res, next) {
