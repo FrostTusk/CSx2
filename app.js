@@ -80,9 +80,10 @@ app.get('/outlook', (req, res) => {
     console.log("reading ical in again");
     read_in_ical();
   }
-
+  
+  console.log(req.query);
   let result = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-\/\/MCWS Classes\/\/EN\r\n' +
-               'METHOD:PUBLISH\r\nCALSCALE:GREGORIAN\r\nNAME:Events in History\r\nX-WR-CALNAME:Events in History' +
+               'METHOD:PUBLISH\r\nCALSCALE:GREGORIAN\r\nNAME:Events in History\r\nX-WR-CALNAME:Events in History\r\n' +
                'UID:americanhistorycalendar.com-zapcal-8E8F12428D96FDF0-\r\n' +
                'X-WR-RECALID:americanhistorycalendar.com-zapcal-8E8F12428D96FDF0-\r\n' +
                'REFRESH-INTERVAL;VALUE=DURATION:D1D\r\n' +
@@ -103,7 +104,7 @@ app.get('/outlook', (req, res) => {
 
   result += "END:VCALENDAR\r\n\r\n";
   res.setHeader('content-type', 'text/calendar; charset=utf-8');
-  res.set("Content-Disposition", 'inline; filename="ical.ics"');
+  res.set("Content-Disposition", 'inline; filename=ical.ics');
   res.set("X-Content-Type-Options", "nosniff");
   res.set("Cache-Control", "must-revalidate");
   res.set("Pragma", "public")
