@@ -90,7 +90,7 @@ app.get('/outlook', (req, res) => {
 
   result += "END:VCALENDAR\r\n\r\n";
   res.setHeader('content-type', 'text/calendar');
-  res.set("Content-Disposition", "attachment;filename=events.ics");
+  res.set("Content-Disposition", 'attachment; filename="ical.ics"');
   //fs.writeFileSync("synchronous.ical", result);
   //res.sendFile('./synchronous.ical', { root: __dirname });
   res.send(result);
