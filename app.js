@@ -81,7 +81,20 @@ app.get('/outlook', (req, res) => {
     read_in_ical();
   }
 
-  let result = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-\/\/MCWS Classes\/\/EN\r\n';
+  let result = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-\/\/MCWS Classes\/\/EN\r\n' +
+               'METHOD:PUBLISH\r\nCALSCALE:GREGORIAN\r\nNAME:Events in History\r\nX-WR-CALNAME:Events in History' +
+               'UID:americanhistorycalendar.com-zapcal-8E8F12428D96FDF0-\r\n' +
+               'X-WR-RECALID:americanhistorycalendar.com-zapcal-8E8F12428D96FDF0-\r\n' +
+               'REFRESH-INTERVAL;VALUE=DURATION:D1D\r\n' +
+               'BEGIN:VTIMEZONE\r\n' +
+               'TZID:UTC\r\n' +
+               'BEGIN:STANDARD\r\n' +
+               'DTSTART:20070101T000000\r\n' +
+               'TZOFFSETFROM:+0000\r\n' +
+               'TZOFFSETTO:+0000\r\n' +
+               'TZNAME:UTC\r\n' +
+               'END:STANDARD\r\n' +
+               'END:VTIMEZONE\r\n'
   for (param in req.query) {
     for (i in ical_memory[param]) {
       result += eventListToString(ical_memory[param][i])
@@ -89,8 +102,12 @@ app.get('/outlook', (req, res) => {
   }
 
   result += "END:VCALENDAR\r\n\r\n";
-  res.setHeader('content-type', 'text/calendar');
-  res.set("Content-Disposition", 'attachment; filename="ical.ics"');
+  res.setHeader('content-type', 'text/calendar; charset=utf-8');
+  res.set("Content-Disposition", 'inline; filename="ical.ics"');
+  res.set("X-Content-Type-Options", "nosniff");
+  res.set("Cache-Control", "must-revalidate");
+  res.set("Pragma", "public")
+  res.set("Last-Modified", mtime.toString());
   //fs.writeFileSync("synchronous.ical", result);
   //res.sendFile('./synchronous.ical', { root: __dirname });
   res.send(result);
