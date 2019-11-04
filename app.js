@@ -64,8 +64,13 @@ app.get('/something', (req, res) => {
       result += eventListToString(ical_memory[param][i])
     }
   }
-
+  res.setHeader('content-type', 'text/plain');
   res.send(result);
 })
 //
+// app.use(function(req, res, next) {
+//   delete req.headers['content-type']; // should be lowercase
+//   next();
+// });
+app.set('x-powered-by', false);
 app.listen(8795, '0.0.0.0');
