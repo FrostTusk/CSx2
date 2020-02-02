@@ -41,12 +41,12 @@ class Event:
             self.enddt = self.enddt.astimezone(pytz.timezone("utc"))
 
         # Get the location
-        daycursor = day_contents.find('<td>in</td>',day_cursor+1)
+        day_cursor = day_contents.find('<td>in</td>',day_cursor+1)
         self.location = day_contents[day_cursor+20:day_contents.find('</td>', day_cursor+20)].replace(' '*5,' ')
 
         # Get the name
-        day_cursor = day_contents.find('>', day_contents.find('<font', day_cursor)) + 1
-        self.name = day_contents[day_cursor:day_contents.find('</font>', day_cursor+1)]
+        day_cursor = day_contents.find('>', day_contents.find('style', day_cursor)) + 1
+        self.name = day_contents[day_cursor:day_contents.find('</a>', day_cursor)]
 
         self._set = True
         return day_contents.find('<tr><td>', day_cursor + 1)
@@ -75,7 +75,7 @@ def get_course_filter(filename):
 
 
 def get_date(week):
-    date = week[week.find('<b>')+3:week.find('</b>')-5]
+    date = week[week.find('<b>')+3:week.find('</b>')-1]
     date = date.split(' ')[1].split('.')
     return datetime.date(year=int(date[2]), month=int(date[1]), day=int(date[0]))
 
@@ -84,17 +84,18 @@ def write_day_events_to_out(day_contents, course_filter, to_utc, out):
     date = get_date(day_contents)
 
     day_cursor = day_contents.find('<tr><td>')
+    day_contents = day_contents[day_cursor:]
+    day_cursor = 1
     while(day_cursor > 0):
         event = Event(to_utc, out)
         day_cursor = event.parse_in_event(day_contents, day_cursor, date)
-
         if len(course_filter) == 0 or event.name.strip() in course_filter:
             event.write_event_to_out()
 
 
 def initialize_args():
     parser = argparse.ArgumentParser(description='CSx2 == Computer Science Calendar System')
-   
+
     parser.add_argument('-itf', type=str,
                     help='Name of input textfile with EXACT names of courses')
 
@@ -112,7 +113,7 @@ def initialize_args():
 
 def main():
     args = initialize_args()
-    
+
     course_filter = []
     if args.itf and os.path.isfile(args.itf):
         course_filter = get_course_filter(args.itf)
