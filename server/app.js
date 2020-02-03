@@ -1,10 +1,21 @@
 // ---
+// General
+// --
+const moment = require('moment');
+const args = process.argv.slice(2);
+
+if (args.length < 1) {
+  console.log("Pass tracked ical file as argument");
+  process.exit(0);
+}
+
+const trackedFile = args[0];
+
+// ---
 // Import
 // ---
 
-const trackedFile = "test.ical";
 const fs = require('fs');
-const moment = require('moment');
 
 let icalMemory = {};
 let icalMemoryTime;
@@ -12,7 +23,7 @@ let backlog = [];
 
 
 function importingTrackedFile() {
-  console.log("Started importing ical file: " + trackedFile);
+  console.log(moment().format() + ": Started importing ical file: " + trackedFile);
   icalMemory = {};
   var lineReader = require('readline').createInterface({
     input: fs.createReadStream(trackedFile)
@@ -47,7 +58,7 @@ function importingTrackedFile() {
     for (i in backlog)
       backlog[i]()
     backlog = [];
-    console.log("Finished importing ical file: " + trackedFile);
+    console.log(moment().format() + ": Finished importing ical file: " + trackedFile);
   });
 }
 
@@ -93,11 +104,11 @@ function returnGoogleiCal(req, res) {
  * Link should be formed as http:/xxxx/google?xxxxx&...&xxxx.ical
  */
 app.get('/google', async function (req, res) {
-  console.log("Received /google ical request")
+  console.log(moment().format() + ": Received /google ical request")
   var stats = fs.statSync(trackedFile);
   var mtime = stats.mtime;
   if (mtime > icalMemoryTime) {
-    console.log("Memory ical outdated, re-importing ical file: " + trackedFile);
+    console.log(moment().format() + ": Memory ical outdated, re-importing ical file: " + trackedFile);
     backlog.push(function() {returnGoogleiCal(req, res)});
     importingTrackedFile();
   } else {
@@ -105,5 +116,5 @@ app.get('/google', async function (req, res) {
   }
 });
 
-
+console.log(moment().format() + ": Started ical server on port 8795");
 app.listen(8795, '0.0.0.0');

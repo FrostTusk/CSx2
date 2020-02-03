@@ -1,7 +1,7 @@
 {
-  "name": "",
+  "name": "CSx2-Server",
   "version": "0.0.1",
-  "description": "",
+  "description": "A simple ical calendar server for CSx2",
   "author": "Mathijs Hubrechtsen frosttusk@gmail.com",
   "license" : "SEE LICENSE IN ../LICENSE",
   "repository": {
